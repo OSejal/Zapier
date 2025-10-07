@@ -16,6 +16,8 @@ const types_1 = require("../types");
 const db_1 = require("../db");
 const router = (0, express_1.Router)();
 router.post("/", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // @ts-ignore
+    const id = req.id;
     const body = req.body;
     const parsedData = types_1.ZapCreateSchema.safeParse(body);
     if (!parsedData.success) {
@@ -26,6 +28,7 @@ router.post("/", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, vo
     yield db_1.prismaClient.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
         const zap = yield db_1.prismaClient.zap.create({
             data: {
+                userId: id,
                 triggerId: "",
                 actions: {
                     create: parsedData.data.actions.map((x, index) => ({
@@ -54,10 +57,52 @@ router.post("/", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, vo
 router.get("/", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // @ts-ignore
     const id = req.id;
-    const zaps = yield db_1.prismaClient.zap.findMany({});
+    const zaps = yield db_1.prismaClient.zap.findMany({
+        where: {
+            userId: id
+        },
+        include: {
+            actions: {
+                include: {
+                    type: true
+                }
+            },
+            trigger: {
+                include: {
+                    type: true
+                }
+            }
+        }
+    });
     console.log("zaps handler");
+    return res.json({
+        zaps
+    });
 }));
-router.get("/:zapId", middleware_1.authMiddleware, (req, res) => {
-    console.log("signin handler");
-});
+router.get("/:zapId", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // @ts-ignore
+    const id = req.id;
+    const zapId = req.params.zapId;
+    const zap = yield db_1.prismaClient.zap.findFirst({
+        where: {
+            id: zapId,
+            userId: id
+        },
+        include: {
+            actions: {
+                include: {
+                    type: true
+                }
+            },
+            trigger: {
+                include: {
+                    type: true
+                }
+            }
+        }
+    });
+    return res.json({
+        zap
+    });
+}));
 exports.zapRouter = router;
