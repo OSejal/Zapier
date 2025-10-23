@@ -21,36 +21,38 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = require("../config");
 const router = (0, express_1.Router)();
 router.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const body = req.body.username;
+    const body = req.body;
     const parserData = types_1.SignupSchema.safeParse(body);
     if (!parserData.success) {
-        return res.status(411).json({
-            message: "Incorrect Inputs"
+        console.log("Validation errors:", parserData.error.issues);
+        return res.status(400).json({
+            message: "Incorrect Inputs",
+            errors: parserData.error.issues
         });
     }
     const userExists = yield db_1.prismaClient.user.findFirst({
         where: {
-            email: parserData.data.username
-        }
+            email: parserData.data.username,
+        },
     });
     if (userExists) {
         return res.status(403).json({
-            message: "User already exists"
+            message: "User already exists",
         });
     }
     yield db_1.prismaClient.user.create({
         data: {
             email: parserData.data.username,
             password: parserData.data.password,
-            name: parserData.data.name
-        }
+            name: parserData.data.name,
+        },
     });
     return res.json({
-        message: "Please verify your account by checking your email"
+        message: "Please verify your account by checking your email",
     });
 }));
 router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const body = req.body.username;
+    const body = req.body;
     const parserData = types_1.SigninSchema.safeParse(body);
     if (!parserData.success) {
         return res.status(411).json({

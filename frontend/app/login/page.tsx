@@ -5,7 +5,7 @@ import { PrimaryButton } from "@/components/buttons/PrimaryButton";
 import { CheckFeature } from "@/components/CheckFeature";
 import { Input } from "@/components/Input";
 import axios from "axios";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BACKEND_URL } from "../config";
 
@@ -16,7 +16,7 @@ export default function() {
 
     return <div>
         <Appbar />
-        <div className="flex justify-center">
+            <div className="flex justify-center">
             <div className="flex pt-8 max-w-4xl">
                 <div className="flex-1 pt-20 px-4">
                     <div className="font-semibold text-3xl pb-4">
@@ -42,13 +42,19 @@ export default function() {
                     }} type="password" placeholder="Your Password"></Input>
                     <div className="pt-4">
                         <PrimaryButton onClick={async () => {
-                             const res = await axios.post(`${BACKEND_URL}/api/v1/user/signin`, {
-                                username: email,
-                                password,
-                                name
-                            });
-                            localStorage.setItem("token", res.data.token);
-                            router.push("/dashboard");
+                            try {
+                                const res = await axios.post(`${BACKEND_URL}/api/v1/user/signin`, {
+                                    username: email,
+                                    password,
+                                });
+                                localStorage.setItem("token", res.data.token);
+                                router.push("/dashboard");
+                            } catch (error) {
+                                if (axios.isAxiosError(error)) {
+                                    console.error('Login error:', error.response?.data);
+                                    alert(error.response?.data?.message || 'Login failed');
+                                }
+                            }
                         }} size="big">Login</PrimaryButton>
                     </div>
                 </div>

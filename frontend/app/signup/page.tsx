@@ -46,13 +46,27 @@ export default function() {
                     }} type="password" placeholder="Your Password"></Input>
                     <div className="pt-4">
                         <PrimaryButton onClick={async () => {
-                          const res = await axios.post(`${BACKEND_URL}/api/v1/user/signup`, {
-                                username: email,
-                                password,
-                                name
-                            });
-                            router.push("/login");
-                        }} size="big">Signup</PrimaryButton>
+    const payload = {
+        username: email,
+        password,
+        name
+    };
+    
+    console.log('Sending payload:', payload);
+    console.log('Name length:', name.length);
+    console.log('Email length:', email.length);
+    console.log('Password length:', password.length);
+    
+    try {
+        const res = await axios.post(`${BACKEND_URL}/api/v1/user/signup`, payload);
+        router.push("/login");
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Error response:', error.response?.data);
+            alert(JSON.stringify(error.response?.data));
+        }
+    }
+}} size="big">Signup</PrimaryButton>
                     </div>
                 </div>
             </div>

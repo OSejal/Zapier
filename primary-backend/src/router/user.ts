@@ -4,52 +4,55 @@ import { SigninSchema, SignupSchema } from "../types";
 import { prismaClient } from "../db";
 import jwt from "jsonwebtoken";
 import { JWT_PASSWORD } from "../config";
-import { email } from "zod";
 const router = Router();
 
 router.post("/signup", async (req, res) => {
-    const body = req.body.username;
-    const parserData = SignupSchema.safeParse(body);
+  const body = req.body;
+  const parserData = SignupSchema.safeParse(body);
 
-    if(!parserData.success) {
-        return res.status(411).json({
-            message: "Incorrect Inputs"
-        })
-    }
-
-    const userExists = await prismaClient.user.findFirst({
-        where: {
-            email: parserData.data.username
-        }
+  if (!parserData.success) {
+    console.log("Validation errors:", parserData.error.issues);
+    return res.status(400).json({
+        message: "Incorrect Inputs",
+        errors: parserData.error.issues
     });
+  }
 
-    if(userExists) {
-        return res.status(403).json({
-            message: "User already exists"
-        })
-    }
+  const userExists = await prismaClient.user.findFirst({
+    where: {
+      email: parserData.data.username,
+    },
+  });
 
-    await prismaClient.user.create({
-        data: {
-            email: parserData.data.username,
-            password: parserData.data.password,
-            name: parserData.data.name
-
-        }
-    })
-
-    return res.json({
-        message: "Please verify your account by checking your email"
+  if (userExists) {
+    return res.status(403).json({
+      message: "User already exists",
     });
-})
+  }
+
+  await prismaClient.user.create({
+    data: {
+      email: parserData.data.username,
+      password: parserData.data.password,
+      name: parserData.data.name,
+    },
+  });
+
+  return res.json({
+    message: "Please verify your account by checking your email",
+  });
+});
+
 
 router.post("/signin", async (req, res) => {
-    const body = req.body.username;
+    const body = req.body;  // ← Make sure this is req.body, NOT req.body.username
     const parserData = SigninSchema.safeParse(body);
 
     if(!parserData.success) {
-        return res.status(411).json({
-            message: "Incorrect Inputs"
+        console.log("Signin validation failed:", parserData.error.issues);
+        return res.status(400).json({
+            message: "Incorrect Inputs",
+            errors: parserData.error.issues
         })
     }
 
