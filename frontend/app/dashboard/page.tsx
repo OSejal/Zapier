@@ -55,7 +55,7 @@ function useZaps() {
 }
 export default function() {
     const { loading, zaps } = useZaps();
-
+    const router = useRouter();
     return <div>
         <Appbar />
         <div className="flex justify-center pt-8">
@@ -65,38 +65,36 @@ export default function() {
                     My Zaps
                 </div>
                 <DarkButton onClick={() => {
-
+                    router.push("/zap/create");
                 }}>
                     Create
                 </DarkButton>
             </div>
             </div>
         </div>
-        {loading ? "Loading..." : <ZapTable zaps={zaps} />}
+        {loading ? "Loading..." : <div className="flex justify-center"> <ZapTable zaps={zaps} /> </div> }
     </div>
 } 
 
 function ZapTable({ zaps }: {zaps: Zap[]}) {
     const router = useRouter();
-    return <table className="table-auto">
-        <thead>
-            <tr>
-                <th></th>
-                <th>Name</th>
-                <th>Last Edit</th>
-                <th>Running</th>
-            </tr>
-        </thead>
-        <tbody>
-            {zaps.map(z => <div>
-                <td>{z.trigger.type.name} { z.actions.map(x => x.type.name + " " )}</td>
-                <td>{z.id}</td>
-                <td>Nov 13, 2003</td>
-                <td><LinkButton onClick={() => {
+
+    return <div className="p-8 max-w-screen-lg w-full">
+        <div className="flex">
+                <div className="flex-1">Name</div>
+                <div className="flex-1">Last Edit</div>
+                <div className="flex-1">Running</div>
+                <div className="flex-1">Go</div>
+
+        </div>
+            {zaps.map(z => <div className="flex border-b border-t py-4">
+                <div className="flex-1">{z.trigger.type.name} { z.actions.map(x => x.type.name + " " )}</div>
+                <div>{z.id}</div>
+                <div>Nov 13, 2003</div>
+                <div><LinkButton onClick={() => {
                     router.push("/zap/" + z.id)
-                }}>Go</LinkButton></td>
-                <td>1961</td>
+                }}>Go</LinkButton></div>
+                <div>1961</div>
             </div>)}
-        </tbody>
-    </table>
+        </div>
 }

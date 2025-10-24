@@ -52,11 +52,13 @@ router.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function*
     });
 }));
 router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const body = req.body;
+    const body = req.body; // ← Make sure this is req.body, NOT req.body.username
     const parserData = types_1.SigninSchema.safeParse(body);
     if (!parserData.success) {
-        return res.status(411).json({
-            message: "Incorrect Inputs"
+        console.log("Signin validation failed:", parserData.error.issues);
+        return res.status(400).json({
+            message: "Incorrect Inputs",
+            errors: parserData.error.issues
         });
     }
     const user = yield db_1.prismaClient.user.findFirst({
